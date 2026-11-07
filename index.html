@@ -184,8 +184,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.2;tex
       <h2 id="edTitle">ساختن اژدهاسوار</h2>
       <div class="fld"><label class="lb" for="fName">اسم سوار</label><input type="text" id="fName" maxlength="16" autocomplete="off"></div>
       <div class="fld"><span class="lb">چه چیزی یاد بگیرد؟</span><div class="row" id="fSubject"></div></div>
-      <div class="fld"><span class="lb">سطح ریاضی</span><div class="lvl" id="fMLv"></div></div>
-      <div class="fld"><span class="lb">سطح انگلیسی</span><div class="lvl" id="fELv"></div></div>
+      <div class="fld" id="fldM"><span class="lb">سطح ریاضی</span><div class="lvl" id="fMLv"></div></div>
+      <div class="fld" id="fldE"><span class="lb">سطح انگلیسی</span><div class="lvl" id="fELv"></div></div>
       <div class="fld"><span class="lb">رنگ اژدها</span><div class="row" id="fDragon"></div></div>
       <div class="fld"><span class="lb">عکس تمام‌قد بچه (اختیاری)</span>
         <div class="row"><label class="filebtn" for="fPhoto">📷 انتخاب عکس</label><input type="file" id="fPhoto" accept="image/*" hidden><button class="chip" id="fNoPhoto" type="button">برداشتن عکس</button></div>
@@ -320,7 +320,8 @@ S.players.forEach(p=>{delete p._img;delete p._shirt;if(!p.mLevel)p.mLevel=p.trac
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k[0]==='_'?undefined:v));}catch(e){}};
 save();
 if(!S.seeded.parsaReward){S.seeded.parsaReward=1;const pp=S.players.find(q=>q.name==='پارسا');if(pp&&!pp.rewardPhoto)pp.rewardPhoto=PARSA_REWARD;save();}
-const fmt=n=>{const s=String(n);return S.settings.digits==='fa'?s.replace(/\d/g,d=>FA[d]):s;};
+// digits follow the lesson: English lessons show 123, math shows ۱۲۳ (the editor follows the subject being edited)
+const fmt=n=>{const s=String(n),who=(()=>{try{return curScreen==='editor'&&D?D:P}catch(e){return P}})();return who&&who.subject==='english'?s:s.replace(/\d/g,d=>FA[d]);};
 let P=S.players[0];
 const totalStars=p=>Object.values(p.prog||{}).reduce((a,b)=>a+b,0);
 const unlocked=(p,g)=>g===0||(p.prog[g-1]||0)>0;
@@ -977,7 +978,7 @@ function renderTitle(){
   $('#roster').querySelectorAll('.pc').forEach((el,i)=>el.onmouseenter=()=>{if(P!==S.players[i]){P=S.players[i];rebuildDragon();}});
   $('#addP').onclick=()=>{AU.resume();openEditor(null);};
   const st=S.settings,T=(k,on,l)=>`<button class="tg" data-k="${k}" aria-pressed="${on}">${l}</button>`;
-  $('#settings').innerHTML=T('music',st.music,'🎵 موسیقی')+T('sound',st.sound,'🔔 صدا')+T('voice',st.voice,'🗣️ صدای گوینده')+T('digits',st.digits==='fa',st.digits==='fa'?'اعداد ۱۲۳':'اعداد 123');
+  $('#settings').innerHTML=T('music',st.music,'🎵 موسیقی')+T('sound',st.sound,'🔔 صدا')+T('voice',st.voice,'🗣️ صدای گوینده');
   $('#settings').querySelectorAll('.tg').forEach(b=>b.onclick=()=>{AU.resume();const k=b.dataset.k;if(k==='digits')st.digits=st.digits==='fa'?'en':'fa';else st[k]=!st[k];
     AU.applyMusic();save();renderTitle();});
   $('#settings').insertAdjacentHTML('beforeend',`<button class="tg" id="musBtn" aria-pressed="${!!S.settings.customMusic}">🎼 آهنگ‌های من (${fmt((S.settings.tracks||[]).length)})</button>`);
@@ -999,7 +1000,7 @@ const swItems=(pal,det)=>{const it=pal.map((c,i)=>[c,'رنگ '+(i+1),c]);if(det&
 function renderEditor(rebuild){
   const C=colorsOf(D),det=D.detected||{};
   chips($('#fSubject'),Object.entries(SUBJECTS),D.subject,v=>D.subject=v);
-  lvChips($('#fMLv'),MATH_LV,D.mLevel||1,v=>{D.mLevel=+v;D.track=+v<=2?'small':'big';});lvChips($('#fELv'),EN_LV,D.eLevel||1,v=>D.eLevel=+v);
+  $('#fldM').hidden=D.subject==='english';$('#fldE').hidden=D.subject!=='english';lvChips($('#fMLv'),MATH_LV,D.mLevel||1,v=>{D.mLevel=+v;D.track=+v<=2?'small':'big';});lvChips($('#fELv'),EN_LV,D.eLevel||1,v=>D.eLevel=+v);
   chips($('#fDragon'),DRAGONS.map((d,i)=>[i,'اژدهای '+d[2],`linear-gradient(135deg,${d[0]} 55%,${d[1]} 55%)`]),D.dragon,v=>D.dragon=+v,'sw');
   chips($('#fSkin'),swItems(SKINS,det.skin),C.skin,v=>D.skinC=v,'sw');
   chips($('#fHair'),swItems(HAIRS_C,det.hair),C.hair,v=>D.hairC=v,'sw');
