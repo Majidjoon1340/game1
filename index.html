@@ -1087,8 +1087,9 @@ function boot2(){S.players.forEach(p=>ensureImg(p,()=>{if(P===p){rebuildDragon()
   (S.settings.tracks||[]).forEach(t=>IDB.get('mus:'+t.id).then(b=>{if(b)AU.tracks.push({id:t.id,name:t.name,blob:b});}));}
 const ready=document.fonts&&document.fonts.load?Promise.race([Promise.all([document.fonts.load('40px Lalezar'),document.fonts.load('40px Fredoka')]),new Promise(r=>setTimeout(r,2500))]):Promise.resolve();
 ready.then(boot,boot);
-window.__dr={VO,AU,genMath,genEnglish,SPR,get P(){return P},get RUN(){return RUN},get dragon(){return dragon},input,get mode(){return mode}};
+window.__dr={get S(){return S},saveAll,mkPlayer,ensureImg,renderTitle,rebuildDragon,IDB,get curScreen(){return curScreen},VO,AU,genMath,genEnglish,SPR,get P(){return P},get RUN(){return RUN},get dragon(){return dragon},input,get mode(){return mode}};
 })();
 </script>
 
+<script src="media.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
