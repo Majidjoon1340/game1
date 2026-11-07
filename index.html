@@ -165,6 +165,18 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.2;tex
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
+<style id="phone-fit">
+@media (max-height:560px){
+  #title{overflow-y:auto;justify-content:flex-start;pointer-events:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  #title .logo{margin-top:0}
+  #title .logo h1{font-size:clamp(2.2rem,14vh,4rem)}
+  #title .logo p{font-size:.95rem}
+  #title > div{flex-shrink:0}
+  .roster{gap:8px;padding:8px}
+  .screen{overflow-y:auto}
+}
+</style>
+
 
 <canvas id="c" aria-label="دنیای سه‌بعدی بازی"></canvas>
 <div id="ui" lang="fa">
