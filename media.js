@@ -20,6 +20,11 @@
       return files;
     }catch(e){return c?c.files:null;}
   }
+  // round portrait wants a square face crop: take the upper middle of the photo
+  function squareFace(src){return new Promise(res=>{const im=new Image();im.onload=()=>{try{
+      const w=im.naturalWidth,h=im.naturalHeight,side=Math.min(w*.72,h*.72),sx=(w-side)/2,sy=Math.min(Math.max(0,h*.17),h-side);
+      const c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,256,256);
+      res(c.toDataURL('image/jpeg',.88));}catch(e){res(null);}};im.onerror=()=>res(null);im.src=src;});}
   const url=f=>enc(f.path)+'?v='+f.sha.slice(0,8);
 
   async function apply(){
@@ -31,19 +36,22 @@
     /* players */
     const groups={};
     files.filter(f=>IMG.test(f.path)).forEach(f=>{const m=f.path.match(/^photos\/([^/]+)\/[^/]+$/);if(m)(groups[m[1]]=groups[m[1]]||[]).push(f);});
-    Object.keys(groups).sort().forEach(name=>{
+    for(const name of Object.keys(groups).sort()){
       const imgs=groups[name].sort(byName);
       let p=S.players.find(q=>q.name===name);
       if(!p){p=mkPlayer(name,'small','math',Math.floor(Math.random()*5),0,'none');S.players.push(p);changed=true;}
       const main=imgs[0]?url(imgs[0]):null, joy=imgs[1]?url(imgs[1]):null;
       // repo photos replace only what came from the repo before (or nothing); a photo picked on the phone wins
-      if(main&&(!p.photo||p.photo===p.repoPhoto)&&p.photo!==main){p.photo=main;p._img=null;changed=true;}
-      if(!main&&p.repoPhoto&&p.photo===p.repoPhoto){p.photo=null;p._img=null;changed=true;}
-      p.repoPhoto=main;
+      const fromRepo=!p.photo||p.photo===p.repoPhoto||(p.repoPhotoData&&p.photo===p.repoPhotoData);
+      if(main&&fromRepo&&(p.repoPhoto!==main||!p.photo)){
+        const d=await squareFace(main);
+        if(d){p.photo=d;p.repoPhotoData=d;p.repoPhoto=main;p._img=null;changed=true;}
+      }
+      if(!main&&p.repoPhoto){if(p.photo===p.repoPhotoData){p.photo=null;p._img=null;}p.repoPhoto=null;p.repoPhotoData=null;changed=true;}
       if(joy&&(!p.rewardPhoto||p.rewardPhoto===p.repoReward)&&p.rewardPhoto!==joy){p.rewardPhoto=joy;changed=true;}
       if(!joy&&p.repoReward&&p.rewardPhoto===p.repoReward){p.rewardPhoto=null;changed=true;}
       p.repoReward=joy;
-    });
+    }
 
     /* music */
     const songs=files.filter(f=>/^music\//.test(f.path)&&AUD.test(f.path)).sort(byName);
