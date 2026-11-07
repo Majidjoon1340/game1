@@ -3,7 +3,7 @@
    music/                  -> every audio file becomes a track in "my songs"
    The file list comes from the GitHub API (one call, cached), files are served by GitHub Pages. */
 (function(){
-  const REPO='Majidjoon1340/game1', BRANCH='main', CK='repo-media-v1', TTL=5*60*1000;
+  const REPO='Majidjoon1340/game1', BRANCH='main', CK='repo-media-v1', TTL=60*1000;
   const IMG=/\.(jpe?g|png|webp|gif)$/i, AUD=/\.(mp3|m4a|aac|ogg|wav)$/i;
   const enc=p=>p.split('/').map(encodeURIComponent).join('/');
   const byName=(a,b)=>a.path.localeCompare(b.path,'en',{numeric:true});
