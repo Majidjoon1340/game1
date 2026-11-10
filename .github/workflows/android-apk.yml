@@ -1,0 +1,62 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Signing key
+        working-directory: android/app
+        env:
+          KEYSTORE_B64: ${{ secrets.APK_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > ejdehasavar.jks
+          else
+            keytool -genkeypair -keystore ejdehasavar.jks -storepass ejdehasavar -keypass ejdehasavar \
+              -alias ejdehasavar -keyalg RSA -keysize 2048 -validity 20000 -dname "CN=Ejdehasavar"
+          fi
+
+      - name: Build APK
+        working-directory: android
+        run: gradle --no-daemon assembleRelease -PvCode=${{ github.run_number }}
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk Ejdehasavar.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ejdehasavar-apk
+          path: Ejdehasavar.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: اژدهاسوار (نسخه اندروید ${{ github.run_number }})
+          body: |
+            فایل نصب بازی اژدهاسوار برای گوشی اندروید.
+            Ejdehasavar.apk را روی گوشی دانلود و باز کنید.
+          files: Ejdehasavar.apk
+          make_latest: true

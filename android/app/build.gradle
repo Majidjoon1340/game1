@@ -1,0 +1,36 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.majidjoon.ejdehasavar'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.majidjoon.ejdehasavar'
+        minSdk 24
+        targetSdk 35
+        versionCode((project.findProperty('vCode') ?: '1') as int)
+        versionName "1.0." + (project.findProperty('vCode') ?: '1')
+    }
+
+    signingConfigs {
+        release {
+            // Key comes from the workflow (repo secret, or a fresh one per build).
+            storeFile file('ejdehasavar.jks')
+            storePassword 'ejdehasavar'
+            keyAlias 'ejdehasavar'
+            keyPassword 'ejdehasavar'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
